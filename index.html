@@ -6,7 +6,7 @@
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
     #prompt { font-size: 24px; margin-bottom: 20px; }
-    <button onclick="startApp()">Start Prompt</button>
+   
     #videoPreview {
       width: 480px;
       height: 360px;
@@ -26,6 +26,7 @@
   </style>
 </head>
 <body>
+   <button onclick="startApp()">Start Prompt</button>
   <div id="prompt">Get ready...</div>
   <video id="videoPreview" autoplay muted playsinline></video>
   <p id="status">Preparing to record...</p>
@@ -33,90 +34,93 @@
   <br>
   <a id="downloadLink" href="#" download="recording.webm">Download your recording</a>
 
-  <script>
-    const prompts = [
-      { text: "Describe your perfect day.", audio: "audio/prompt1.mp3" },
-      { text: "What motivates you every morning?", audio: "audio/prompt2.mp3" },
-      { text: "Talk about a childhood memory.", audio: "audio/prompt3.mp3" },
-      { text: "What’s something new you’ve learned recently?", audio: "audio/prompt4.mp3" },
-      { text: "Tell a story that made you laugh.", audio: "audio/prompt5.mp3" }
-    ];
+<script>
+  const prompts = [
+    { text: "Describe your perfect day.", audio: "audio/prompt1.mp3" },
+    { text: "What motivates you every morning?", audio: "audio/prompt2.mp3" },
+    { text: "Talk about a childhood memory.", audio: "audio/prompt3.mp3" },
+    { text: "What’s something new you’ve learned recently?", audio: "audio/prompt4.mp3" },
+    { text: "Tell a story that made you laugh.", audio: "audio/prompt5.mp3" }
+  ];
 
-    const promptDisplay = document.getElementById('prompt');
-    const videoPreview = document.getElementById('videoPreview');
-    const statusDisplay = document.getElementById('status');
-    const downloadLink = document.getElementById('downloadLink');
-    const stopButton = document.getElementById('stopButton');
+  const promptDisplay = document.getElementById('prompt');
+  const videoPreview = document.getElementById('videoPreview');
+  const statusDisplay = document.getElementById('status');
+  const downloadLink = document.getElementById('downloadLink');
+  const stopButton = document.getElementById('stopButton');
 
-    const RECORDING_DURATION = 60000; // 60 seconds
-    const COUNTDOWN_SECONDS = 3;      // Countdown before recording
+  const RECORDING_DURATION = 60000; // 60 seconds
+  const COUNTDOWN_SECONDS = 3;      // Countdown before recording
 
-    let mediaRecorder;
-    let mediaStream;
-    let chunks = [];
-    let recordingTimeout;
+  let mediaRecorder;
+  let mediaStream;
+  let chunks = [];
+  let recordingTimeout;
 
-    const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+  function startApp() {
     promptDisplay.textContent = selectedPrompt.text;
 
-    // Play the audio for the prompt
     const audio = new Audio(selectedPrompt.audio);
     audio.play();
 
     audio.onended = () => {
       startCountdown(COUNTDOWN_SECONDS);
     };
+  }
 
-    function startCountdown(seconds) {
-      if (seconds > 0) {
-        statusDisplay.textContent = `Recording starts in ${seconds}...`;
-        setTimeout(() => startCountdown(seconds - 1), 1000);
-      } else {
-        startRecording();
-      }
+  function startCountdown(seconds) {
+    if (seconds > 0) {
+      statusDisplay.textContent = `Recording starts in ${seconds}...`;
+      setTimeout(() => startCountdown(seconds - 1), 1000);
+    } else {
+      startRecording();
     }
+  }
 
-    function startRecording() {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-        mediaStream = stream;
-        videoPreview.srcObject = stream;
+  function startRecording() {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+      mediaStream = stream;
+      videoPreview.srcObject = stream;
 
-        mediaRecorder = new MediaRecorder(stream);
-        chunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      chunks = [];
 
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          downloadLink.href = url;
-          downloadLink.style.display = 'inline';
-          stopButton.style.display = 'none';
-          statusDisplay.textContent = "Recording finished!";
-          stream.getTracks().forEach(track => track.stop());
-        };
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.style.display = 'inline';
+        stopButton.style.display = 'none';
+        statusDisplay.textContent = "Recording finished!";
+        stream.getTracks().forEach(track => track.stop());
+      };
 
-        statusDisplay.textContent = "Recording started...";
-        mediaRecorder.start();
-        stopButton.style.display = 'inline';
+      statusDisplay.textContent = "Recording started...";
+      mediaRecorder.start();
+      stopButton.style.display = 'inline';
 
-        // Automatically stop after time limit
-        recordingTimeout = setTimeout(() => {
-          stopRecording();
-        }, RECORDING_DURATION);
-      }).catch(error => {
-        statusDisplay.textContent = "Error accessing camera/mic.";
-        console.error(error);
-      });
+      // Automatically stop after time limit
+      recordingTimeout = setTimeout(() => {
+        stopRecording();
+      }, RECORDING_DURATION);
+    }).catch(error => {
+      statusDisplay.textContent = "Error accessing camera/mic.";
+      console.error(error);
+    });
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+      clearTimeout(recordingTimeout);
     }
+  }
 
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        clearTimeout(recordingTimeout);
-      }
-    }
+  stopButton.addEventListener('click', stopRecording);
+</script>
 
-    stopButton.addEventListener('click', stopRecording);
-  </script>
 </body>
 </html>
