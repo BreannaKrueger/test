@@ -5,6 +5,10 @@
   <title>Prompt Recorder</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
+   #logo {
+  width: 150px;      /* adjust size as needed */
+  margin-bottom: 20px;
+}
     #prompt { font-size: 24px; margin-bottom: 20px; }
    
     #videoPreview {
@@ -26,7 +30,8 @@
   </style>
 </head>
 <body>
-   <button onclick="startApp()">Start Prompt</button>
+  <img src="images/logo.png" alt="Your Logo" id="logo">
+  <button onclick="startApp()">Start Prompt</button>
   <div id="prompt">Get ready...</div>
   <video id="videoPreview" autoplay muted playsinline></video>
   <p id="status">Preparing to record...</p>
