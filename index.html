@@ -34,11 +34,11 @@
 
   <script>
     const prompts = [
-      "Describe your perfect day.",
-      "What motivates you every morning?",
-      "Talk about a childhood memory.",
-      "What’s something new you’ve learned recently?",
-      "Tell a story that made you laugh."
+      { text: "Describe your perfect day.", audio: "audio/prompt1.mp3" },
+      { text: "What motivates you every morning?", audio: "audio/prompt2.mp3" },
+      { text: "Talk about a childhood memory.", audio: "audio/prompt3.mp3" },
+      { text: "What’s something new you’ve learned recently?", audio: "audio/prompt4.mp3" },
+      { text: "Tell a story that made you laugh.", audio: "audio/prompt5.mp3" }
     ];
 
     const promptDisplay = document.getElementById('prompt');
@@ -56,11 +56,16 @@
     let recordingTimeout;
 
     const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-    promptDisplay.textContent = selectedPrompt;
-// Speak the selected prompt aloud
-const utterance = new SpeechSynthesisUtterance(selectedPrompt);
-utterance.lang = 'en-US'; // Set language/accent
-speechSynthesis.speak(utterance);
+    promptDisplay.textContent = selectedPrompt.text;
+
+    // Play the audio for the prompt
+    const audio = new Audio(selectedPrompt.audio);
+    audio.play();
+
+    audio.onended = () => {
+      startCountdown(COUNTDOWN_SECONDS);
+    };
+
     function startCountdown(seconds) {
       if (seconds > 0) {
         statusDisplay.textContent = `Recording starts in ${seconds}...`;
@@ -111,12 +116,6 @@ speechSynthesis.speak(utterance);
     }
 
     stopButton.addEventListener('click', stopRecording);
-
-   // Wait for the prompt to be spoken before starting countdown
-utterance.onend = () => {
-  startCountdown(COUNTDOWN_SECONDS);
-};
-speechSynthesis.speak(utterance);
   </script>
 </body>
 </html>
