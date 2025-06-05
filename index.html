@@ -1,67 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Prompt Recorder</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
-    #logo {
-      display: block;
-      margin: 0 auto 40px;
-      width: 480px;
-      max-width: 100%;
-      margin-bottom: 60px;
-    }
-    #prompt {
-      font-size: 24px;
-      margin: 0 auto 20px;
-      max-width: 480px;
-      text-align: left;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      line-height: 1.4;
-    }
-    #videoPreview {
-      width: 480px;
-      height: 360px;
-      margin: 20px auto;
-      border: 2px solid #ccc;
-      display: block;
-    }
-    #downloadLink, #stopButton {
-      margin-top: 20px;
-      display: none;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    #startButton {
-      margin-bottom: 80px;
-    }
-  </style>
-</head>
-<body>
-  <img src="images/logo.png" alt="Your Logo" id="logo" />
-  <button id="startButton" onclick="startApp()">Start Prompt</button>
-  <button id="resetButton" onclick="resetApp()">Reset for Testing</button>
-  <div id="prompt">Get ready...</div>
-  <video id="videoPreview" autoplay muted playsinline></video>
-  <p id="status">Preparing to record...</p>
-  <button id="stopButton">Stop Recording</button>
-  <br />
-  <a id="downloadLink" href="#" download="recording.mov">Download your recording</a>
-  <p id="recordingCountdown"></p>
+function startRecording() {
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+    mediaStream = stream;
+    videoPreview.srcObject = stream;
 
-<script>
-let countdownInterval = null;
-let recordingCount = 0;
-const MAX_RECORDINGS = 3;
-const prompts = [/* your prompts here */];
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const possibleTypes = isSafari
+      ? ['video/quicktime']
+      : [
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8,opus',
+          'video/mp4;codecs=avc1',
+          'video/quicktime'
+        ];
 
-const promptDisplay = document.getElementById('prompt');
-const videoPreview = document.getElementById('videoPreview');
-const statusDisplay = document.getElementById('status');
-const downloadLink = document.getElementById('downloadLink');
-const stopButton = do
+    let selectedType = possibleTypes.find(type => MediaRecorder.isTypeSupported(type));
+    const options = selectedType ? { mimeType: selectedType } : undefined;
+
+    try {
+      mediaRecorder = new MediaRecorder(stream, options);
+    } catch (e) {
+      console.error("Failed to initialize MediaRecorder with type:", selectedType, e);
+      statusDisplay.textContent = "Recording not supported in this browser.";
+      return;
+    }
+
+    chunks = [];
+
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: selectedType || 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+
+      if (selectedType && selectedType.includes('mp4')) {
+        downloadLink.download = 'recording.mp4';
+      } else if (selectedType && selectedType.includes('quicktime')) {
+        downloadLink.download = 'recording.mov';
+      } else {
+        downloadLink.download = 'recording.webm';
+      }
+
+      downloadLink.style.display = 'inline';
+      stopButton.style.display = 'none';
+      stream.getTracks().forEach(track => track.stop());
+      statusDisplay.textContent = "Recording finished!";
+      document.getElementById('recordingCountdown').textContent = "";
+    };
+
+    mediaRecorder.start();
+    statusDisplay.textContent = "Recording started...";
+    recordingCount++;
+
+    if (recordingCount >= MAX_RECORDINGS) disableStartButton();
+    stopButton.style.display = 'inline';
+
+    let secondsLeft = RECORDING_DURATION / 1000;
+    const countdownDisplay = document.getElementById('recordingCountdown');
+    countdownDisplay.textContent = `Recording ends in ${secondsLeft} seconds`;
+
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+      secondsLeft--;
+      countdownDisplay.textContent = `Recording ends in ${secondsLeft} seconds`;
+    }, 1000);
+
+    recordingTimeout = setTimeout(() => {
+      stopRecording();
+      clearInterval(countdownInterval);
+    }, RECORDING_DURATION);
+  }).catch(error => {
+    statusDisplay.textContent = "Camera or mic access was denied.";
+    console.error(error);
+  });
+}
