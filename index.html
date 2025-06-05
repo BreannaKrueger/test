@@ -225,11 +225,12 @@ countdownInterval = setInterval(() => {
   });
 }
 
-  function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-      mediaRecorder.stop();
-      clearTimeout(recordingTimeout);
-         // ✅ Stop the countdown display and clear interval
+ function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+    clearTimeout(recordingTimeout);
+
+    // ✅ Stop the countdown display and clear interval
     const countdownDisplay = document.getElementById('recordingCountdown');
     countdownDisplay.textContent = "";
     if (countdownInterval) {
@@ -238,10 +239,9 @@ countdownInterval = setInterval(() => {
     }
   }
 }
-    }
-  }
 
-  stopButton.addEventListener('click', stopRecording);
+stopButton.addEventListener('click', stopRecording);
+
 </script>
 
 </body>
