@@ -25,6 +25,9 @@
       margin-top: 20px;
       display: none;
     }
+   <button id="startButton" onclick="startApp()">Start Prompt</button>
+<button id="resetButton" onclick="resetApp()">Reset for Testing</button>
+
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -66,15 +69,23 @@ const MAX_RECORDINGS = 3; // Change this to your desired limit
   let mediaStream;
   let chunks = [];
   let recordingTimeout;
-
-  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+function disableStartButton() {
+  const startButton = document.getElementById('startButton');
+  startButton.disabled = true;
+  startButton.style.opacity = 0.5;
+  startButton.style.cursor = 'not-allowed';
+  statusDisplay.textContent = "Recording limit reached.";
+}
+ 
 
 function startApp() {
   if (recordingCount >= MAX_RECORDINGS) {
     alert("You’ve reached the maximum number of recordings.");
+    disableStartButton();
     return;
   }
 
+  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
   promptDisplay.textContent = selectedPrompt.text;
 
   const audio = new Audio(selectedPrompt.audio);
@@ -83,6 +94,20 @@ function startApp() {
   audio.onended = () => {
     startCountdown(COUNTDOWN_SECONDS);
   };
+}
+
+function resetApp() {
+  recordingCount = 0;
+
+  const startButton = document.getElementById('startButton');
+  startButton.disabled = false;
+  startButton.style.opacity = 1;
+  startButton.style.cursor = 'pointer';
+
+  downloadLink.style.display = 'none';
+  stopButton.style.display = 'none';
+  promptDisplay.textContent = "Get ready...";
+  statusDisplay.textContent = "Preparing to record...";
 }
 
   function startCountdown(seconds) {
@@ -102,6 +127,7 @@ function startApp() {
       mediaRecorder = new MediaRecorder(stream);
       chunks = [];
 
+     
       mediaRecorder.ondataavailable = e => chunks.push(e.data);
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
@@ -111,11 +137,17 @@ function startApp() {
         stopButton.style.display = 'none';
         statusDisplay.textContent = "Recording finished!";
         stream.getTracks().forEach(track => track.stop());
+      document.getElementById('status').textContent = `Recording ${recordingCount + 1} of ${MAX_RECORDINGS}`;
+
       };
 
       statusDisplay.textContent = "Recording started...";
 mediaRecorder.start();
 recordingCount++; // ⬅️ Add this line
+       if (recordingCount >= MAX_RECORDINGS) {
+      disableStartButton(); // ✅ Disable the button if limit reached
+    }
+
 stopButton.style.display = 'inline';
 
       // Automatically stop after time limit
