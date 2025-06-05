@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Prompt Recorder</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
-#logo {
-  display: block;
-  margin: 0 auto 40px;
-  width: 480px; /* Match videoPreview width */
-  max-width: 100%; /* Scale down on smaller screens */
-  margin-bottom: 60px;
-}
+    #logo {
+      display: block;
+      margin: 0 auto 40px;
+      width: 480px;
+      max-width: 100%;
+      margin-bottom: 60px;
+    }
     #prompt { font-size: 24px; margin-bottom: 20px; }
-   
     #videoPreview {
       width: 480px;
       height: 360px;
@@ -25,32 +24,33 @@
       margin-top: 20px;
       display: none;
     }
-   <button id="startButton" onclick="startApp()">Start Prompt</button>
-<button id="resetButton" onclick="resetApp()">Reset for Testing</button>
-
-   button {
-  padding: 10px 20px;
-  font-size: 16px;
-  margin-top: 20px;
-}
-
-#startButton {
-  margin-bottom: 80px;
-}
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    /* This will move the start button further from the "Get ready..." text */
+    #startButton {
+      margin-bottom: 80px; /* Increase this value to move it further */
+    }
   </style>
 </head>
 <body>
-  <img src="images/logo.png" alt="Your Logo" id="logo">
-  <button onclick="startApp()">Start Prompt</button>
+  <img src="images/logo.png" alt="Your Logo" id="logo" />
+
+  <!-- The button with id for CSS targeting -->
+  <button id="startButton" onclick="startApp()">Start Prompt</button>
+  
+  <button id="resetButton" onclick="resetApp()">Reset for Testing</button>
+
   <div id="prompt">Get ready...</div>
+
   <video id="videoPreview" autoplay muted playsinline></video>
   <p id="status">Preparing to record...</p>
   <button id="stopButton">Stop Recording</button>
-  <br>
+  <br />
   <a id="downloadLink" href="#" download="recording.webm">Download your recording</a>
-#startButton {
-  margin-bottom: 40px; /* Adjust the spacing as desired */
-}
+
 <script>
   let recordingCount = 0;
 const MAX_RECORDINGS = 3; // Change this to your desired limit
