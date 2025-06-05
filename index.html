@@ -170,14 +170,37 @@ function startRecording() {
     mediaStream = stream;
     videoPreview.srcObject = stream;
 
-    mediaRecorder = new MediaRecorder(stream);
+    // Detect supported MIME type for recording
+    const possibleTypes = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/mp4;codecs=avc1',
+      'video/quicktime'  // for Safari .mov
+    ];
+    
+    let selectedType = possibleTypes.find(type => MediaRecorder.isTypeSupported(type));
+    if (!selectedType) {
+      selectedType = '';  // default to browser default
+    }
+
+    mediaRecorder = new MediaRecorder(stream, selectedType ? { mimeType: selectedType } : undefined);
     chunks = [];
 
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
+      const blob = new Blob(chunks, { type: selectedType || 'video/webm' });
       const url = URL.createObjectURL(blob);
       downloadLink.href = url;
+
+      // Set download file extension based on mime type
+      if (selectedType.includes('mp4')) {
+        downloadLink.download = 'recording.mp4';
+      } else if (selectedType.includes('quicktime')) {
+        downloadLink.download = 'recording.mov';
+      } else {
+        downloadLink.download = 'recording.webm';
+      }
+
       downloadLink.style.display = 'inline';
       stopButton.style.display = 'none';
       stream.getTracks().forEach(track => track.stop());
@@ -200,30 +223,30 @@ function startRecording() {
     const countdownDisplay = document.getElementById('recordingCountdown');
     countdownDisplay.textContent = `Recording ends in ${secondsLeft} seconds`;
 
-  // Clear any previous interval before starting a new one
-if (countdownInterval) clearInterval(countdownInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
 
-countdownInterval = setInterval(() => {
-  secondsLeft--;
-  if (secondsLeft > 0) {
-    countdownDisplay.textContent = `Recording ends in ${secondsLeft} seconds`;
-  } else {
-    clearInterval(countdownInterval);
-    countdownInterval = null;
-  }
-}, 1000);
-
+    countdownInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft > 0) {
+        countdownDisplay.textContent = `Recording ends in ${secondsLeft} seconds`;
+      } else {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    }, 1000);
 
     // Automatically stop after time limit
     recordingTimeout = setTimeout(() => {
       stopRecording();
       clearInterval(countdownInterval);
     }, RECORDING_DURATION);
+
   }).catch(error => {
-   statusDisplay.textContent = "Camera or mic access was denied. Please allow permissions and reload the page.";
+    statusDisplay.textContent = "Camera or mic access was denied. Please allow permissions and reload the page.";
     console.error(error);
   });
 }
+
 
  function stopRecording() {
   if (mediaRecorder && mediaRecorder.state === "recording") {
