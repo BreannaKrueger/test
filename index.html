@@ -28,11 +28,15 @@
    <button id="startButton" onclick="startApp()">Start Prompt</button>
 <button id="resetButton" onclick="resetApp()">Reset for Testing</button>
 
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
+   button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+#startButton {
+  margin-bottom: 40px;
+}
   </style>
 </head>
 <body>
@@ -44,7 +48,9 @@
   <button id="stopButton">Stop Recording</button>
   <br>
   <a id="downloadLink" href="#" download="recording.webm">Download your recording</a>
-
+#startButton {
+  margin-bottom: 40px; /* Adjust the spacing as desired */
+}
 <script>
   let recordingCount = 0;
 const MAX_RECORDINGS = 3; // Change this to your desired limit
