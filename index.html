@@ -43,6 +43,8 @@
   <a id="downloadLink" href="#" download="recording.webm">Download your recording</a>
 
 <script>
+  let recordingCount = 0;
+const MAX_RECORDINGS = 3; // Change this to your desired limit
   const prompts = [
     { text: "Describe your perfect day.", audio: "audio/prompt1.mp3" },
     { text: "What motivates you every morning?", audio: "audio/prompt2.mp3" },
@@ -67,16 +69,21 @@
 
   const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-  function startApp() {
-    promptDisplay.textContent = selectedPrompt.text;
-
-    const audio = new Audio(selectedPrompt.audio);
-    audio.play();
-
-    audio.onended = () => {
-      startCountdown(COUNTDOWN_SECONDS);
-    };
+function startApp() {
+  if (recordingCount >= MAX_RECORDINGS) {
+    alert("You’ve reached the maximum number of recordings.");
+    return;
   }
+
+  promptDisplay.textContent = selectedPrompt.text;
+
+  const audio = new Audio(selectedPrompt.audio);
+  audio.play();
+
+  audio.onended = () => {
+    startCountdown(COUNTDOWN_SECONDS);
+  };
+}
 
   function startCountdown(seconds) {
     if (seconds > 0) {
@@ -107,8 +114,9 @@
       };
 
       statusDisplay.textContent = "Recording started...";
-      mediaRecorder.start();
-      stopButton.style.display = 'inline';
+mediaRecorder.start();
+recordingCount++; // ⬅️ Add this line
+stopButton.style.display = 'inline';
 
       // Automatically stop after time limit
       recordingTimeout = setTimeout(() => {
